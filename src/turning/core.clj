@@ -1,5 +1,6 @@
 (ns turning.core
   (:gen-class))
+(require 'turning.parser)
 
 (defn long-string [& strings] (clojure.string/join "\n" strings))
 
@@ -19,5 +20,8 @@
 (defn -main
   "I don't do a whole lot ... yet."
   [& args]
-  (println (transform md->html input)))
+  (println (transform md->html input-text)))
 
+#_(defn -main
+  [& args]
+  (println "Yeah"))
