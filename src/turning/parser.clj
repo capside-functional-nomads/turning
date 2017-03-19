@@ -1,7 +1,7 @@
 (ns turning.parser
   #_(:gen-class))
 
-(defn as-str [whatever]
+(defn- as-str [whatever]
   (cond (char? whatever) (str whatever)
         (empty? whatever) ""
         (string? whatever) whatever))
@@ -38,6 +38,8 @@
 
 (defn success? [result]
   (contains? result :success))
+(defn failure? [result]
+  (contains? result :failure))
 
 (defn p-or [p1 p2]
   (fn [s]
@@ -55,6 +57,53 @@
             (success (str (get-parsed r1) (get-parsed r2)) (get-nonparsed r2))
             (fail s)))
         (fail s)))))
+
+(defn p-apply [p f]
+  (fn [s]
+    (let [r (p s)]
+      (if (success? r)
+        (success (f (get-parsed r))
+                 (get-nonparsed r))
+        r))))
+
+(defn p-many
+  "Parses 0 or more times"
+  [p]
+  (fn [s]
+    (loop [r (p s)
+           accum ""
+           rest s]
+      (if (not (success? r))
+        (success accum rest)
+        (recur (p (get-nonparsed r))
+               (str accum (get-parsed r))
+               (get-nonparsed r))))))
+
+(defn p-many1
+  "Parses 1 or more times"
+  [p]
+  (fn [s]
+    (let [r (p s)]
+      (if (success? r)
+        ((p-many p) s)
+        (fail s)))))
+
+(defn p-any
+  "Parses any"
+  [& parsers]
+  (fn [s]
+    (loop [p (first parsers)
+           ps (rest parsers)]
+      (if (nil? p)
+        (fail s)
+        (let [r (p s)]
+          (if (success? r)
+            r
+            (recur (first ps) (rest ps))))))))
+
+(defn p-any-char
+  [chars]
+  (apply p-any (map parse-char chars)))
 
 (defn parse-char-a [s]
   (let [p (parse-char \a)]
