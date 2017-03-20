@@ -33,8 +33,13 @@
   [c]
   (fn [s]
     (if (= c (first s))
-      {:success [(as-str c) (as-str (subs s 1))]}
-      {:failure (as-str s)})))
+      (success (as-str c) (subs s 1))
+      (fail s))))
+                                        ; -> any? pass?
+(defn p-*
+  []
+  (fn [s]
+    (success (as-str (first s)) (subs s 1))))
 
 (defn success? [result]
   (contains? result :success))
@@ -73,11 +78,17 @@
     (loop [r (p s)
            accum ""
            rest s]
-      (if (not (success? r))
+      (if (failure? r)
         (success accum rest)
-        (recur (p (get-nonparsed r))
-               (str accum (get-parsed r))
-               (get-nonparsed r))))))
+        (let [parsed (get-parsed r)
+              nonparsed (get-nonparsed r)]
+          (if (empty? nonparsed)
+            (success (str accum parsed) nonparsed)
+            (do
+              #_(prn (str  "parsed: " (str accum parsed) " nonparsed: " nonparsed))
+              (recur (p nonparsed)
+                     (str accum parsed)
+                     nonparsed))))))))
 
 (defn p-many1
   "Parses 1 or more times"
@@ -88,6 +99,7 @@
         ((p-many p) s)
         (fail s)))))
 
+; -> one-off
 (defn p-any
   "Parses any"
   [& parsers]
@@ -101,9 +113,13 @@
             r
             (recur (first ps) (rest ps))))))))
 
+; -> one-char-of
 (defn p-any-char
   [chars]
   (apply p-any (map parse-char chars)))
+
+
+                                        ; not
 
 (defn parse-char-a [s]
   (let [p (parse-char \a)]

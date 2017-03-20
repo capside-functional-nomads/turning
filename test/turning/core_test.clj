@@ -80,3 +80,33 @@
       (is (= {:success ["b" "kkk"]} (any-abc "bkkk")))
       (is (= {:success ["c" "kkk"]} (any-abc "ckkk")))
       (is (= {:failure "dkkk"} (any-abc "dkkk"))))))
+
+(defn bold-parser []
+  (let [lowercase (clojure.string/join (map char (range (int \a) (int \z))))
+        uppercase (clojure.string/join (map char (range (int \A) (int \Z))))
+        lower (p-any-char lowercase)
+        upper (p-any-char uppercase)
+        alpha (p-or lower upper)
+        word (p-many alpha)
+        star (parse-char \*)]
+    (p-and (p-and star word) star)))
+
+(deftest parse-bold-test
+  (testing "Can parse bold"
+    (let [parse (bold-parser)]
+      (is (success? (parse "*afAF*"))))))
+
+(defn transform-with-bolds []
+  (let [chop-first (fn [s] (subs s 1))
+        chop-last (fn [s] (let [c (count s)] (subs s 0 (- c 1))))
+        strong (fn [s] (str "<strong>" s "</strong>"))]
+    (p-apply (bold-parser)
+             (fn [s]
+               (->> s chop-first chop-last strong)))))
+
+(deftest transform-bolds-to-strong-test
+  (let [parse (transform-with-bolds)]
+    (is (success? (parse "*abc*")))
+    (is (= {:success ["<strong>abc</strong>" "def"]} (parse "*abc*def")))))
+
+
