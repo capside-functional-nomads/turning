@@ -107,6 +107,17 @@
         ((p-many p) s)
         (fail s)))))
 
+(defn p-times
+  "Parses n times"
+  [p n]
+  (fn [s]
+    (let [many (p-many p)
+          r (many s)]
+      (if (and (success? r)
+               (= n (count (get-parsed r))))
+        r
+        (fail s)))))
+
 ; -> one-off
 (defn p-any
   "Parses any"
@@ -120,6 +131,26 @@
           (if (success? r)
             r
             (recur (first ps) (rest ps))))))))
+
+(defn p-seq
+  "Parsers parsers in sequence"
+  [& parsers]
+  (fn [s]
+    (loop [p (first parsers)
+           ps (rest parsers)
+           accum ""
+           rests s]
+      (do
+        #_(prn accum " - " rests)
+        (if (nil? p)
+          (success accum rests)
+          (let [r (p rests)]
+            (if (success? r)
+              (recur (first ps)
+                     (rest ps)
+                     (str accum (get-parsed r))
+                     (get-nonparsed r))
+              r)))))))
 
 ; -> one-char-of
 (defn p-any-char

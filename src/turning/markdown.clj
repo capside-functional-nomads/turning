@@ -21,8 +21,11 @@
 (def bold (p/p-and (p/p-and star word) star))
 (def italic (p/p-and (p/p-and underscore word) underscore))
 
-(defn chop-first [s] (subs s 1))
-(defn chop-last [s]
+(defn chop-first
+  ([s] (subs s 1))
+  ([s n] (subs s n)))
+(defn chop-last
+  [s]
   (let [c (count s)]
     (subs s 0 (- c 1))))
 (defn b [s]
@@ -42,21 +45,21 @@
             (p/p-or bold->b italic->i)))
   #_(p/p-any word whitespace bold italic))
 
-;; (defn bold-parser []
-;;   (let [lowercase (clojure.string/join (map char (range (int \a) (int \z))))
-;;         uppercase (clojure.string/join (map char (range (int \A) (int \Z))))
-;;         lower (p-any-char lowercase)
-;;         upper (p-any-char uppercase)
-;;         alpha (p-or lower upper)
-;;         word (p-many alpha)
-;;         star (parse-char \*)]
-;;     (p-and (p-and star word) star)))
+(def nl (p/parse-char \newline))
+(def indent (p/p-times space 2))
 
-;; (defn transform-with-bolds []
-;;   (let [chop-first (fn [s] (subs s 1))
-;;         chop-last (fn [s] (let [c (count s)] (subs s 0 (- c 1))))
-;;         strong (fn [s] (str "<strong>" s "</strong>"))]
-;;     (p-apply (bold-parser)
-;;              (fn [s]
-;;                (->> s chop-first chop-last strong)))))
+(def uli (p/p-seq (p/p-times space 2)
+                  star
+                  space
+                  text
+                  nl))
 
+(defn li [s] (str "<li>" s "</li>"))
+(def uli->li (p/p-apply uli
+                        (fn [s] (->> (chop-first s 4) chop-last li))))
+(def unordered-list (p/p-many uli->li))
+
+(defn ul [s] (str "<ul>" s "</ul>"))
+(def ulist
+  (p/p-apply unordered-list
+             (fn [s] (->> s ul))))

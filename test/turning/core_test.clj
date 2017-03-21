@@ -1,7 +1,8 @@
 (ns turning.core-test
   (:require [clojure.test :refer :all]
             [turning.core :refer :all]
-            [turning.parser :refer :all]))
+            [turning.parser :refer :all]
+            [turning.markdown :as m]))
 #_(require 'turning.parser)
 
 (deftest a-test
@@ -110,3 +111,6 @@
     (is (= {:success ["<strong>abc</strong>" "def"]} (parse "*abc*def")))))
 
 
+(deftest lists-and-bolds-and-italics
+  (let [t "  * Item *bold* of list\n  * item _italic_ of list\n  * other\n"]
+    (is (= {:success ["<ul><li>Item <b>bold</b> of list</li><li>item <i>italic</i> of list</li><li>other</li></ul>" ""]} (m/ulist t)))))
