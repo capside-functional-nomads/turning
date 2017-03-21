@@ -46,12 +46,20 @@
 (defn failure? [result]
   (contains? result :failure))
 
+(defn- best-match
+  [r1 r2]
+  (let [len1 (count (get-parsed r1))
+        len2 (count (get-parsed r2))]
+    (if (> len1 len2)
+      r1
+      r2)))
+
 (defn p-or [p1 p2]
   (fn [s]
     (let [r1 (p1 s)]
-      (if (success? r1)
-        r1
-        (p2 s)))))
+      (if (failure? r1)
+        (p2 s)
+        (best-match r1 (p2 s))))))
 
 (defn p-and [p1 p2]
   (fn [s]
