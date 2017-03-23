@@ -152,6 +152,15 @@
                      (get-nonparsed r))
               r)))))))
 
+(defn p-skip
+  "Skips what p parses"
+  [p]
+  (fn [s]
+    (let [r (p s)]
+      (if (success? r)
+        (success "" (get-nonparsed r))
+        r))))
+
 ; -> one-char-of
 (defn p-any-char
   [chars]
