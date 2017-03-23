@@ -8,6 +8,7 @@
 (def upper (p/p-any-char uppercase))
 (def alpha (p/p-or lower upper))
 (def digit (p/p-any-char "0123456789"))
+(def space (p/parse-char \space))
 
 (def other-chars-in-symbol (p/p-any-char "-"))
 (def psymbol
@@ -16,26 +17,23 @@
 
 (def pnumber (p/p-many digit))
 
-(defn digit-val [d]
-  (condp = d
-    \0 0
-    \1 1
-    \2 2
-    \3 3
-    \4 4
-    \5 5
-    \6 6
-    \7 7
-    \8 8
-    \9 9))
+(def digit-val
+  (apply hash-map (flatten (map vector "0123456789" (range 10)))))
+
 (defn eval-number [s]
   (let [ns (map digit-val s)]
     (reduce (fn [acc n] (+ n (* 10 acc))) ns)))
 (def number (p/p-apply pnumber eval-number))
 
-(def literal (p/p-or symbol number))
+(def literal psymbol #_(p/p-or psymbol number))
 
-(def lparen (p/parse-char "("))
-(def rparen (p/parse-char ")"))
-(def plist (p/p-seq lparen (p/p-many literal) rparen))
+(def lparen (p/parse-char \())
+(def rparen (p/parse-char \)))
 
+;; ()
+;; (a)
+;; (a b)
+;; (a b )
+(def list-item (p/p-or literal
+                       (p/p-seq literal space)))
+(def plist (p/p-seq lparen (p/p-many list-item) rparen))
