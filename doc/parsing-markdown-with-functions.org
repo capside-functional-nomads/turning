@@ -1,0 +1,116 @@
+#+title: Parsing markdown with functions
+#+REVEAL_ROOT: http://cdn.jsdelivr.net/reveal.js/3.0.0/
+#+OPTIONS: num:nil toc:nil author:nil
+
+* Parsing a char
+
+  We would like to parse the character ~a~.
+
+** Design
+   
+   The parser of =a= is a function that, given an input string
+   =s=:
+
+   - succeds parsing a
+   - or fails parsing a
+
+** Implemenentation #1
+
+   #+begin_src clojure :eval never
+
+   (defn parse-a [s]
+     (if (= \a (first s))
+       {:success ["a" (subs s 1)] }
+       {:error s }))
+
+   #+end_src
+
+** Demo
+
+#+BEGIN_NOTES
+On the repl, try:
+(parse-a "hello")
+(parse-a "ahello")
+#+END_NOTES
+
+* Refactor
+
+** Hide implementation
+
+   #+BEGIN_SRC clojure :eval never
+
+(defn- as-str
+  "Ensures wathever is returned as string"
+  [whatever]
+  (cond (char? whatever) (str whatever)
+        (empty? whatever) ""
+        (string? whatever) whatever))
+
+(defn- success
+  "Creates a success"
+  [parsed nonparsed]
+  {:success [(as-str parsed) (as-str nonparsed)]})
+
+(defn- fail
+  "Creates a failure"
+  [s]
+  {:failure (as-str s)})
+   
+   #+END_SRC
+
+** Rewrite the parser
+
+   #+BEGIN_SRC clojure :eval never
+
+(defn parse-a [s]
+  (if (= \a (first s))
+    (success \a (subs s 1))
+    (fail s)))
+   
+   #+END_SRC
+
+
+
+* Generalize
+
+** Parsing any character
+   
+   Now that we know how to parse the =a= character, we can generalize a bit.
+
+** 
+
+   #+BEGIN_SRC clojure :eval never
+
+(defn parse-char
+  "Returns a char parser"
+  [c]
+  (fn [s]
+    (if (= c (first s))
+      (success c (subs s 1))
+      (fail s))))
+   
+   #+END_SRC
+
+
+
+** Create helpers
+
+   #+BEGIN_SRC clojure :eval never
+
+(defn- get-nonparsed
+  "Extracts next string to be parsed from a success"
+  [suc]
+  (let [[parsed nonparsed] (:success suc)]
+    nonparsed))
+
+(defn- get-parsed
+  "Extracts parsed part from success"
+  [suc]
+  (let [[parsed nonparse] (:success suc)]
+    parsed))
+   
+   #+END_SRC
+
+
+* End
+
