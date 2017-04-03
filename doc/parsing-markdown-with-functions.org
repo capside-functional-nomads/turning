@@ -4,24 +4,28 @@
 
 * Parsing a char
 
+  #+ATTR_REVEAL: :frag (appear)
   We would like to parse the character ~a~.
-
+  
 ** Design
    
+   #+ATTR_REVEAL: :frag (appear)
    The parser of =a= is a function that, given an input string
    =s=:
 
+   #+ATTR_REVEAL: :frag (appear)
    - succeds parsing a
    - or fails parsing a
 
 ** Implemenentation #1
 
+   #+ATTR_REVEAL: :frag (appear)
    #+begin_src clojure :eval never
 
-   (defn parse-a [s]
-     (if (= \a (first s))
-       {:success ["a" (subs s 1)] }
-       {:error s }))
+(defn parse-a [s]
+  (if (= \a (first s))
+    {:success ["a" (subs s 1)] }
+    {:error s }))
 
    #+end_src
 
@@ -37,6 +41,7 @@ On the repl, try:
 
 ** Hide implementation
 
+   #+ATTR_REVEAL: :frag (appear)
    #+BEGIN_SRC clojure :eval never
 
 (defn- as-str
@@ -46,10 +51,20 @@ On the repl, try:
         (empty? whatever) ""
         (string? whatever) whatever))
 
+   #+END_SRC
+
+   #+ATTR_REVEAL: :frag (appear)
+   #+BEGIN_SRC clojure :eval never
+
 (defn- success
   "Creates a success"
   [parsed nonparsed]
   {:success [(as-str parsed) (as-str nonparsed)]})
+
+   #+END_SRC
+
+   #+ATTR_REVEAL: :frag (appear)
+   #+BEGIN_SRC clojure :eval never
 
 (defn- fail
   "Creates a failure"
@@ -58,8 +73,9 @@ On the repl, try:
    
    #+END_SRC
 
-** Rewrite the parser
+** Implementation #2
 
+   #+ATTR_REVEAL: :frag (appear)
    #+BEGIN_SRC clojure :eval never
 
 (defn parse-a [s]
@@ -73,12 +89,17 @@ On the repl, try:
 
 * Generalize
 
-** Parsing any character
-   
-   Now that we know how to parse the =a= character, we can generalize a bit.
-
 ** 
 
+   #+ATTR_REVEAL: :frag (appear)
+   Now that we know how to parse the =a= character, we can generalize a bit.
+
+** Parsing any character
+
+   #+ATTR_REVEAL: :frag (appear)
+   Given a character =c=, return a parser that parses =c=.
+
+   #+ATTR_REVEAL: :frag (appear)
    #+BEGIN_SRC clojure :eval never
 
 (defn parse-char
@@ -91,7 +112,75 @@ On the repl, try:
    
    #+END_SRC
 
+** Implementation #3 
 
+   #+ATTR_REVEAL: :frag (appear)
+   #+BEGIN_SRC clojure :eval never
+
+(def parse-a (parse-char \a)) 
+   
+   #+END_SRC
+
+* Paradigm shift
+
+
+** 
+  
+   #+ATTR_REVEAL: :frag (appear)
+   From:
+   #+ATTR_REVEAL: :frag (appear)
+  #+BEGIN_SRC clojure :eval never
+
+(defn parse-a [s]
+  (if (= \a (first s))
+    {:success ["a" (subs s 1)] }
+    {:error s }))
+
+  #+END_SRC
+
+   #+ATTR_REVEAL: :frag (appear)
+  to
+
+   #+ATTR_REVEAL: :frag (appear)
+  #+BEGIN_SRC clojure :eval never
+  
+(def parse-a (parse-char \a)) 
+
+  #+END_SRC
+
+** Parsers
+
+   #+ATTR_REVEAL: :frag (appear)
+   Now *parsers* (a special kind of functions) are
+   the *objects* we deal with (we use =def=, not =defn=).
+
+** But we're not there yet.
+   We have to climb another level.
+* Next level
+** 
+   - We now want to parse either =a= or =b=.
+   - We want a single parser that is capable of parsing any of
+     the two.
+** 
+   #+BEGIN_SRC clojure :eval never
+
+(defn parse-a-or-b [a b]
+  (fn [s]
+    (let [f (first s)]
+      (if (or (= a f)
+              (= b f))
+        (success f (subs s 1))
+        (fail s)))))
+ 
+   #+END_SRC
+** Works?
+** Works? 
+   Yes
+** STOP! 
+** Are you listening to me?
+   #+ATTR_REVEAL: :frag (appear)
+   - Parsers are the objects, not characters!
+   - We have left those behind!
 
 ** Create helpers
 
@@ -111,6 +200,8 @@ On the repl, try:
    
    #+END_SRC
 
+* 
 
+  
 * End
 
