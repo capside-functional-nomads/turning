@@ -12,11 +12,11 @@
 (def punctuation (p/p-any-char punctuationletters))
 (def alpha (p/p-or (p/p-or lower upper) accented))
 (def word (p/p-many alpha))
-(def space (p/parse-char \space))
+(def space (p/p-char \space))
 (def whitespace (p/p-many space))
 
-(def star (p/parse-char \*))
-(def underscore (p/parse-char \_))
+(def star (p/p-char \*))
+(def underscore (p/p-char \_))
 
 (def bold (p/p-and (p/p-and star word) star))
 (def italic (p/p-and (p/p-and underscore word) underscore))
@@ -45,7 +45,7 @@
             (p/p-or bold->b italic->i)))
   #_(p/p-any word whitespace bold italic))
 
-(def nl (p/parse-char \newline))
+(def nl (p/p-char \newline))
 (def indent (p/p-times space 2))
 
 (def uli (p/p-seq (p/p-times space 2)

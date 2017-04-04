@@ -73,6 +73,15 @@ On the repl, try:
    
    #+END_SRC
 
+
+   #+ATTR_REVEAL: :frag (appear)
+   #+BEGIN_SRC clojure :eval never
+
+(defn- advance [s]
+  (subs s 1))
+
+   #+END_SRC
+
 ** Implementation #2
 
    #+ATTR_REVEAL: :frag (appear)
@@ -80,7 +89,7 @@ On the repl, try:
 
 (defn parse-a [s]
   (if (= \a (first s))
-    (success \a (subs s 1))
+    (success \a (advance s))
     (fail s)))
    
    #+END_SRC
@@ -102,12 +111,12 @@ On the repl, try:
    #+ATTR_REVEAL: :frag (appear)
    #+BEGIN_SRC clojure :eval never
 
-(defn parse-char
+(defn p-char
   "Returns a char parser"
   [c]
   (fn [s]
     (if (= c (first s))
-      (success c (subs s 1))
+      (success c (advance s))
       (fail s))))
    
    #+END_SRC
@@ -158,10 +167,15 @@ On the repl, try:
    We have to climb another level.
 * Next level
 ** 
+
+   #+ATTR_REVEAL: :frag (appear)
    - We now want to parse either =a= or =b=.
    - We want a single parser that is capable of parsing any of
      the two.
-** 
+
+** Implementation #1
+
+   #+ATTR_REVEAL: :frag (appear)
    #+BEGIN_SRC clojure :eval never
 
 (defn parse-a-or-b [a b]
@@ -169,18 +183,112 @@ On the repl, try:
     (let [f (first s)]
       (if (or (= a f)
               (= b f))
-        (success f (subs s 1))
+        (success f (advance s))
         (fail s)))))
  
    #+END_SRC
-** Works?
+
 ** Works? 
+
+   #+ATTR_REVEAL: :frag (appear)
    Yes
-** STOP! 
-** Are you listening to me?
+
+** 
+
+   Are you listening to me?
    #+ATTR_REVEAL: :frag (appear)
    - Parsers are the objects, not characters!
    - We have left those behind!
+
+** 
+   We should deal with parsers, not charaters.
+
+
+   #+ATTR_REVEAL: :frag (appear)
+   #+BEGIN_SRC clojure :eval never
+
+(def parse-a (p-char \a))
+
+   #+END_SRC
+
+   #+ATTR_REVEAL: :frag (appear)
+   #+BEGIN_SRC clojure :eval never
+
+(def parse-b (p-char \b))
+
+   #+END_SRC
+
+   #+ATTR_REVEAL: :frag (appear)
+   #+BEGIN_SRC clojure :eval never
+
+(def parse-a-or-b (p-or parse-a parse-b))
+
+   #+END_SRC
+
+** WHAT?!
+
+** 
+   I have not told you about this yet :$
+   
+   #+ATTR_REVEAL: :frag (appear)
+   But we're on the *next level*, right?
+
+   #+ATTR_REVEAL: :frag (appear)
+   Move on.
+
+** p-or
+   
+   #+ATTR_REVEAL: :frag (appear)
+   We want a *parser* that given two parsers =p1= and =p2=
+   returns a parser that parses what =p1= parses **or** what =p2= parses.
+
+   #+ATTR_REVEAL: :frag (appear)
+   #+BEGIN_SRC clojure :eval never
+
+(defn p-or [p1 p2]
+  (fn [s]
+    (let [r1 (p1 s)]
+      (if (failure? r1)
+        (p2 s)
+        (best-match r1 (p2 s))))))
+
+   #+END_SRC
+
+** 
+
+   #+ATTR_REVEAL: :frag (appear)
+   #+BEGIN_SRC clojure :eval never
+
+(defn failure? [result]
+  (contains? result :failure))
+
+   #+END_SRC
+
+   #+ATTR_REVEAL: :frag (appear)
+   #+BEGIN_SRC clojure :eval never
+
+(defn- best-match
+  [r1 r2]
+  (let [len1 (count (get-parsed r1))
+        len2 (count (get-parsed r2))]
+    (if (> len1 len2)
+      r1
+      r2)))
+
+   #+END_SRC
+
+** 
+
+   #+ATTR_REVEAL: :frag (appear)
+   #+BEGIN_SRC clojure :eval never
+
+(defn- get-parsed
+  "Extracts parsed part from success"
+  [suc]
+  (let [[parsed nonparse] (:success suc)]
+    parsed))
+ 
+   #+END_SRC
 
 ** Create helpers
 
@@ -200,8 +308,34 @@ On the repl, try:
    
    #+END_SRC
 
-* 
+* Markdown parser
 
+
+   #+BEGIN_SRC clojure :eval never
+
+(def lowercase (clojure.string/join (map char (range (int \a) (int \z)))))
+(def uppercase (clojure.string/join (map char (range (int \A) (int \Z)))))
+(def accentedletters "àèéíòóúÀÈÉÍÒÓÚ")
+(def punctuationletters "!?")
+
+(def lower (p/p-any-char lowercase))
+(def upper (p/p-any-char uppercase))
+(def accented (p/p-any-char accentedletters))
+(def punctuation (p/p-any-char punctuationletters))
+(def alpha (p/p-or (p/p-or lower upper) accented))
+(def word (p/p-many alpha))
+(def space (p/p-char \space))
+(def whitespace (p/p-many space))
+
+(def star (p/p-char \*))
+(def underscore (p/p-char \_))
+
+(def bold (p/p-and (p/p-and star word) star))
+(def italic (p/p-and (p/p-and underscore word) underscore))
+
+
+
+   #+END_SRC
   
 * End
 

@@ -1,7 +1,9 @@
 (ns turning.parser
   #_(:gen-class))
 
-(defn- as-str [whatever]
+(defn- as-str
+  "Ensures wathever is returned as string"
+  [whatever]
   (cond (char? whatever) (str whatever)
         (empty? whatever) ""
         (string? whatever) whatever))
@@ -9,12 +11,15 @@
 (defn- success
   "Creates a success"
   [parsed nonparsed]
-  {:success [parsed nonparsed]})
+  {:success [(as-str parsed) (as-str nonparsed)]})
 
 (defn- fail
   "Creates a failure"
   [s]
   {:failure (as-str s)})
+
+(defn- advance [s]
+  (subs s 1))
 
 (defn- get-nonparsed
   "Extracts next string to be parsed from a success"
@@ -28,18 +33,18 @@
   (let [[parsed nonparse] (:success suc)]
     parsed))
 
-(defn parse-char
+(defn p-char
   "Returns a char parser"
   [c]
   (fn [s]
     (if (= c (first s))
-      (success (as-str c) (subs s 1))
+      (success c (advance s))
       (fail s))))
-                                        ; -> any? pass?
+
 (defn p-*
   []
   (fn [s]
-    (success (as-str (first s)) (subs s 1))))
+    (success (first s) (advance s))))
 
 (defn success? [result]
   (contains? result :success))
@@ -155,12 +160,24 @@
 ; -> one-char-of
 (defn p-any-char
   [chars]
-  (apply p-any (map parse-char chars)))
+  (apply p-any (map p-char chars)))
 
 
                                         ; not
 
 (defn parse-char-a [s]
-  (let [p (parse-char \a)]
+  (let [p (p-char \a)]
     (p s)))
 
+(defn parse-a [s]
+  (if (= \a (first s))
+    (success \a (advance s))
+    (fail s)))
+
+(defn parse-a-or-b [a b]
+  (fn [s]
+    (let [f (first s)]
+      (if (or (= a f)
+              (= b f))
+        (success f (advance s))
+        (fail s)))))

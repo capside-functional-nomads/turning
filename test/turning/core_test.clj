@@ -14,24 +14,24 @@
     (is (= {:success ["a" "bc"]} (parse-char-a "abc")))
     (is (= {:failure "b"} (parse-char-a "b")))))
 
-(deftest parse-char-test
+(deftest p-char-test
   (testing "Parse any char"
-    (let [parse (parse-char \b)]
+    (let [parse (p-char \b)]
       (is (= {:success ["b" "ac"]} (parse "bac")))
       (is (= {:failure "abc"} (parse "abc"))))))
 
 (deftest parse-or
   (testing "Parse a char or other char"
-    (let [p1 (parse-char \a)
-          p2 (parse-char \b)
+    (let [p1 (p-char \a)
+          p2 (p-char \b)
           parse (p-or p1 p2)]
       (is (= {:success ["a" "bc"]} (parse "abc")))
       (is (= {:success ["b" "ac"]} (parse "bac"))))))
 
 (deftest parse-and
   (testing "Parse a char and another char next"
-    (let [p1 (parse-char \a)
-          p2 (parse-char \b)
+    (let [p1 (p-char \a)
+          p2 (p-char \b)
           parseab (p-and p1 p2)
           parseba (p-and p2 p1)]
       (is (= {:success ["ab" "c"]} (parseab "abc")))
@@ -39,10 +39,10 @@
 
 (deftest parse-or-and
   (testing "Parse ab or cd"
-    (let [a (parse-char \a)
-          b (parse-char \b)
-          c (parse-char \c)
-          d (parse-char \d)
+    (let [a (p-char \a)
+          b (p-char \b)
+          c (p-char \c)
+          d (p-char \d)
           ab (p-and a b)
           cd (p-and c d)
           parse (p-or ab cd)]
@@ -51,22 +51,22 @@
 
 (deftest with-apply
   (testing "With apply"
-    (let [a (parse-char \a)
-          bB (p-apply (parse-char \b) clojure.string/upper-case)
-          c (parse-char \c)
+    (let [a (p-char \a)
+          bB (p-apply (p-char \b) clojure.string/upper-case)
+          c (p-char \c)
           parse (p-and (p-and a bB) c)]
       (is (= {:success ["aBc" "d"]} (parse "abcd"))))))
 
 (deftest with-apply
   (testing "With apply 2"
-    (let [a (parse-char \a)
+    (let [a (p-char \a)
           aaa (p-and (p-and a a) a)
           AAA (p-apply aaa (fn [_] "XXX"))]
       (is (= {:success ["XXX" "c"]} (AAA "aaac"))))))
 
 (deftest many-test
   (testing "many"
-    (let [a (parse-char \a)
+    (let [a (p-char \a)
           manya (p-many a)
           manya1 (p-many1 a)]
       (is (= {:success ["a" "b"]} (manya "ab")))
@@ -89,7 +89,7 @@
         upper (p-any-char uppercase)
         alpha (p-or lower upper)
         word (p-many alpha)
-        star (parse-char \*)]
+        star (p-char \*)]
     (p-and (p-and star word) star)))
 
 (deftest parse-bold-test
