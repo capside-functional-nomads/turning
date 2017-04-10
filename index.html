@@ -26,7 +26,7 @@
 <body>
 <div class="reveal">
 <div class="slides">
-<section id="sec-title-slide"><h1 class="title">Parsing markdown with functions</h1><p class="date">Created: 2017-04-10 Mon 15:33</p>
+<section id="sec-title-slide"><h1 class="title">Parsing markdown with functions</h1><p class="date">Created: 2017-04-10 Mon 16:02</p>
 </section>
 
 <section>
@@ -223,9 +223,9 @@ We have to climb another level.
 </section>
 </section>
 <section>
-<section id="slide-orgheadline25">
-<h2 id="orgheadline25">Next level</h2>
-<div class="outline-text-2" id="text-orgheadline25">
+<section id="slide-orgheadline26">
+<h2 id="orgheadline26">Next level</h2>
+<div class="outline-text-2" id="text-orgheadline26">
 </div></section>
 <section id="slide-orgheadline16">
 <h3 id="orgheadline16"></h3>
@@ -364,41 +364,32 @@ It is a <b>parser combinator</b>.
 </p>
 
 </section>
+<section id="slide-orgheadline25">
+<h3 id="orgheadline25">This is functional programming, right?</h3>
+<div class="org-src-container">
+
+<pre  class="fragment (appear)"><span style="color: #4f97d7;">(</span><span style="color: #4f97d7; font-weight: bold;">defn</span> <span style="color: #bc6ec5; font-weight: bold;">p-apply</span>
+  <span style="color: #2aa1ae;">"Returns a parser that parses as p and applies f to</span>
+<span style="color: #2aa1ae;">  the parsed result if p succeeds. Fails otherwise, of course."</span>
+  <span style="color: #bc6ec5;">[</span>p f<span style="color: #bc6ec5;">]</span>
+  <span style="color: #bc6ec5;">(</span><span style="color: #4f97d7; font-weight: bold;">fn</span> <span style="color: #2d9574;">[</span>s<span style="color: #2d9574;">]</span>
+    <span style="color: #2d9574;">(</span><span style="color: #4f97d7; font-weight: bold;">let</span> <span style="color: #67b11d;">[</span>r <span style="color: #b1951d;">(</span>p s<span style="color: #b1951d;">)</span><span style="color: #67b11d;">]</span>
+      <span style="color: #67b11d;">(</span><span style="color: #4f97d7; font-weight: bold;">if</span> <span style="color: #b1951d;">(</span>success? r<span style="color: #b1951d;">)</span>
+        <span style="color: #b1951d;">(</span>success <span style="color: #4f97d7;">(</span>f <span style="color: #bc6ec5;">(</span>get-parsed r<span style="color: #bc6ec5;">)</span><span style="color: #4f97d7;">)</span>
+                 <span style="color: #4f97d7;">(</span>get-nonparsed r<span style="color: #4f97d7;">)</span><span style="color: #b1951d;">)</span>
+        r<span style="color: #67b11d;">)</span><span style="color: #2d9574;">)</span><span style="color: #bc6ec5;">)</span><span style="color: #4f97d7;">)</span>
+</pre>
+</div>
+
+</section>
 </section>
 <section>
-<section id="slide-orgheadline28">
-<h2 id="orgheadline28">Intrerlude</h2>
-<div class="outline-text-2" id="text-orgheadline28">
+<section id="slide-orgheadline29">
+<h2 id="orgheadline29">Review</h2>
+<div class="outline-text-2" id="text-orgheadline29">
 </div></section>
-<section id="slide-orgheadline26">
-<h3 id="orgheadline26"></h3>
-<p>
-We need some more helpers.
-</p>
-
-<div class="org-src-container">
-
-<pre  class="fragment (appear)"><span style="color: #4f97d7;">(</span><span style="color: #4f97d7; font-weight: bold;">defn-</span> <span style="color: #bc6ec5; font-weight: bold;">get-parsed</span>
-  <span style="color: #2aa1ae;">"Extracts parsed part from success"</span>
-  <span style="color: #bc6ec5;">[</span>suc<span style="color: #bc6ec5;">]</span>
-  <span style="color: #bc6ec5;">(</span><span style="color: #4f97d7; font-weight: bold;">let</span> <span style="color: #2d9574;">[</span><span style="color: #67b11d;">[</span>parsed nonparse<span style="color: #67b11d;">]</span> <span style="color: #67b11d;">(</span><span style="color: #a45bad;">:success</span> suc<span style="color: #67b11d;">)</span><span style="color: #2d9574;">]</span>
-    parsed<span style="color: #bc6ec5;">)</span><span style="color: #4f97d7;">)</span>
-</pre>
-</div>
-
-<div class="org-src-container">
-
-<pre  class="fragment (appear)"><span style="color: #4f97d7;">(</span><span style="color: #4f97d7; font-weight: bold;">defn-</span> <span style="color: #bc6ec5; font-weight: bold;">get-nonparsed</span>
-  <span style="color: #2aa1ae;">"Extracts next string to be parsed from a success"</span>
-  <span style="color: #bc6ec5;">[</span>suc<span style="color: #bc6ec5;">]</span>
-  <span style="color: #bc6ec5;">(</span><span style="color: #4f97d7; font-weight: bold;">let</span> <span style="color: #2d9574;">[</span><span style="color: #67b11d;">[</span>parsed nonparsed<span style="color: #67b11d;">]</span> <span style="color: #67b11d;">(</span><span style="color: #a45bad;">:success</span> suc<span style="color: #67b11d;">)</span><span style="color: #2d9574;">]</span>
-    nonparsed<span style="color: #bc6ec5;">)</span><span style="color: #4f97d7;">)</span>
-</pre>
-</div>
-
-</section>
 <section id="slide-orgheadline27">
-<h3 id="orgheadline27">Review</h3>
+<h3 id="orgheadline27"></h3>
 <div class="org-src-container">
 
 <pre  class="fragment (appear)"><span style="color: #4f97d7;">(</span><span style="color: #4f97d7; font-weight: bold;">defn-</span> <span style="color: #bc6ec5; font-weight: bold;">as-str</span>
@@ -423,18 +414,12 @@ We need some more helpers.
 </pre>
 </div>
 
-<p class="fragment (appear)">
-Some helpers
-</p>
+</section>
+<section id="slide-orgheadline28">
+<h3 id="orgheadline28"></h3>
 <div class="org-src-container">
 
-<pre  class="src src-clojure"><span style="color: #4f97d7;">(</span><span style="color: #4f97d7; font-weight: bold;">defn-</span> <span style="color: #bc6ec5; font-weight: bold;">get-nonparsed</span>
-  <span style="color: #2aa1ae;">"Extracts next string to be parsed from a success"</span>
-  <span style="color: #bc6ec5;">[</span>suc<span style="color: #bc6ec5;">]</span>
-  <span style="color: #bc6ec5;">(</span><span style="color: #4f97d7; font-weight: bold;">let</span> <span style="color: #2d9574;">[</span><span style="color: #67b11d;">[</span>parsed nonparsed<span style="color: #67b11d;">]</span> <span style="color: #67b11d;">(</span><span style="color: #a45bad;">:success</span> suc<span style="color: #67b11d;">)</span><span style="color: #2d9574;">]</span>
-    nonparsed<span style="color: #bc6ec5;">)</span><span style="color: #4f97d7;">)</span>
-
-<span style="color: #4f97d7;">(</span><span style="color: #4f97d7; font-weight: bold;">defn-</span> <span style="color: #bc6ec5; font-weight: bold;">get-parsed</span>
+<pre  class="fragment (appear)"><span style="color: #4f97d7;">(</span><span style="color: #4f97d7; font-weight: bold;">defn-</span> <span style="color: #bc6ec5; font-weight: bold;">get-parsed</span>
   <span style="color: #2aa1ae;">"Extracts parsed part from success"</span>
   <span style="color: #bc6ec5;">[</span>suc<span style="color: #bc6ec5;">]</span>
   <span style="color: #bc6ec5;">(</span><span style="color: #4f97d7; font-weight: bold;">let</span> <span style="color: #2d9574;">[</span><span style="color: #67b11d;">[</span>parsed nonparse<span style="color: #67b11d;">]</span> <span style="color: #67b11d;">(</span><span style="color: #a45bad;">:success</span> suc<span style="color: #67b11d;">)</span><span style="color: #2d9574;">]</span>
@@ -442,28 +427,13 @@ Some helpers
 </pre>
 </div>
 
-
-</section>
-</section>
-<section>
-<section id="slide-orgheadline30">
-<h2 id="orgheadline30">Functional programming</h2>
-<div class="outline-text-2" id="text-orgheadline30">
-</div></section>
-<section id="slide-orgheadline29">
-<h3 id="orgheadline29">This is functional programming, right?</h3>
 <div class="org-src-container">
 
-<pre  class="fragment (appear)"><span style="color: #4f97d7;">(</span><span style="color: #4f97d7; font-weight: bold;">defn</span> <span style="color: #bc6ec5; font-weight: bold;">p-apply</span>
-  <span style="color: #2aa1ae;">"Returns a parser that parses as p and applies f to</span>
-<span style="color: #2aa1ae;">  the parsed result if p succeeds. Fails otherwise, of course."</span>
-  <span style="color: #bc6ec5;">[</span>p f<span style="color: #bc6ec5;">]</span>
-  <span style="color: #bc6ec5;">(</span><span style="color: #4f97d7; font-weight: bold;">fn</span> <span style="color: #2d9574;">[</span>s<span style="color: #2d9574;">]</span>
-    <span style="color: #2d9574;">(</span><span style="color: #4f97d7; font-weight: bold;">let</span> <span style="color: #67b11d;">[</span>r <span style="color: #b1951d;">(</span>p s<span style="color: #b1951d;">)</span><span style="color: #67b11d;">]</span>
-      <span style="color: #67b11d;">(</span><span style="color: #4f97d7; font-weight: bold;">if</span> <span style="color: #b1951d;">(</span>success? r<span style="color: #b1951d;">)</span>
-        <span style="color: #b1951d;">(</span>success <span style="color: #4f97d7;">(</span>f <span style="color: #bc6ec5;">(</span>get-parsed r<span style="color: #bc6ec5;">)</span><span style="color: #4f97d7;">)</span>
-                 <span style="color: #4f97d7;">(</span>get-nonparsed r<span style="color: #4f97d7;">)</span><span style="color: #b1951d;">)</span>
-        r<span style="color: #67b11d;">)</span><span style="color: #2d9574;">)</span><span style="color: #bc6ec5;">)</span><span style="color: #4f97d7;">)</span>
+<pre  class="fragment (appear)"><span style="color: #4f97d7;">(</span><span style="color: #4f97d7; font-weight: bold;">defn-</span> <span style="color: #bc6ec5; font-weight: bold;">get-nonparsed</span>
+  <span style="color: #2aa1ae;">"Extracts next string to be parsed from a success"</span>
+  <span style="color: #bc6ec5;">[</span>suc<span style="color: #bc6ec5;">]</span>
+  <span style="color: #bc6ec5;">(</span><span style="color: #4f97d7; font-weight: bold;">let</span> <span style="color: #2d9574;">[</span><span style="color: #67b11d;">[</span>parsed nonparsed<span style="color: #67b11d;">]</span> <span style="color: #67b11d;">(</span><span style="color: #a45bad;">:success</span> suc<span style="color: #67b11d;">)</span><span style="color: #2d9574;">]</span>
+    nonparsed<span style="color: #bc6ec5;">)</span><span style="color: #4f97d7;">)</span>
 </pre>
 </div>
 
@@ -471,7 +441,17 @@ Some helpers
 </section>
 <section>
 <section id="slide-orgheadline31">
-<h2 id="orgheadline31">Your turn now</h2>
+<h2 id="orgheadline31">Markdown parser</h2>
+<div class="outline-text-2" id="text-orgheadline31">
+</div></section>
+<section id="slide-orgheadline30">
+<h3 id="orgheadline30">Demo?</h3>
+
+</section>
+</section>
+<section>
+<section id="slide-orgheadline32">
+<h2 id="orgheadline32">Your turn now</h2>
 </section>
 </section>
 </div>
