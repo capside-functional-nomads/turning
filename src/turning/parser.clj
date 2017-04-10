@@ -66,6 +66,8 @@
         (p2 s)
         (best-match r1 (p2 s))))))
 
+(def | p-or)
+
 (defn p-and [p1 p2]
   (fn [s]
     (let [r1 (p1 s)]
@@ -76,7 +78,10 @@
             (fail s)))
         (fail s)))))
 
-(defn p-apply [p f]
+(defn p-apply
+  "Returns a parser that parses as p and applies f to
+  the parsed result if p succeeds."
+  [p f]
   (fn [s]
     (let [r (p s)]
       (if (success? r)
@@ -181,3 +186,7 @@
               (= b f))
         (success f (advance s))
         (fail s)))))
+
+(def parse-a (p-char \a))
+(def parse-b (p-char \b))
+(def parse-a-or-b (p-or parse-a parse-b))

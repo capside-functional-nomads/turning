@@ -227,8 +227,8 @@ On the repl, try:
 
 ** WHAT?!
 
-** 
-   I have not told you about this yet :$
+   #+ATTR_REVEAL: :frag (appear)
+   I have not told you about this =p-or= yet :$
    
    #+ATTR_REVEAL: :frag (appear)
    But we're on the *next level*, right?
@@ -277,7 +277,18 @@ On the repl, try:
 
    #+END_SRC
 
+** Parser combinators 
+   
+   #+ATTR_REVEAL: :frag (appear)
+   =p-or= is a function that given 2 parsers returns another parser.
+   
+   #+ATTR_REVEAL: :frag (appear)
+   It is a *parser combinator*.
+
+* Intrerlude
+
 ** 
+   We need some more helpers.
 
    #+ATTR_REVEAL: :frag (appear)
    #+BEGIN_SRC clojure :eval never
@@ -290,8 +301,46 @@ On the repl, try:
  
    #+END_SRC
 
-** Create helpers
+   #+ATTR_REVEAL: :frag (appear)
+   #+BEGIN_SRC clojure :eval never
 
+(defn- get-nonparsed
+  "Extracts next string to be parsed from a success"
+  [suc]
+  (let [[parsed nonparsed] (:success suc)]
+    nonparsed))
+
+   #+END_SRC
+
+** Review
+   
+   #+ATTR_REVEAL: :frag (appear)
+   #+BEGIN_SRC clojure :eval never
+
+(defn- as-str
+  "Ensures wathever is returned as string"
+  [whatever]
+  (cond (char? whatever) (str whatever)
+        (empty? whatever) ""
+        (string? whatever) whatever))
+
+(defn- success
+  "Creates a success"
+  [parsed nonparsed]
+  {:success [(as-str parsed) (as-str nonparsed)]})
+
+(defn- fail
+  "Creates a failure"
+  [s]
+  {:failure (as-str s)})
+
+(defn- advance [s]
+  (subs s 1))
+
+   #+END_SRC
+
+   #+ATTR_REVEAL: :frag (appear)
+   Some helpers
    #+BEGIN_SRC clojure :eval never
 
 (defn- get-nonparsed
@@ -308,34 +357,26 @@ On the repl, try:
    
    #+END_SRC
 
-* Markdown parser
 
+* Functional programming
 
+** This is functional programming, right?
+
+   #+ATTR_REVEAL: :frag (appear)
    #+BEGIN_SRC clojure :eval never
 
-(def lowercase (clojure.string/join (map char (range (int \a) (int \z)))))
-(def uppercase (clojure.string/join (map char (range (int \A) (int \Z)))))
-(def accentedletters "àèéíòóúÀÈÉÍÒÓÚ")
-(def punctuationletters "!?")
-
-(def lower (p/p-any-char lowercase))
-(def upper (p/p-any-char uppercase))
-(def accented (p/p-any-char accentedletters))
-(def punctuation (p/p-any-char punctuationletters))
-(def alpha (p/p-or (p/p-or lower upper) accented))
-(def word (p/p-many alpha))
-(def space (p/p-char \space))
-(def whitespace (p/p-many space))
-
-(def star (p/p-char \*))
-(def underscore (p/p-char \_))
-
-(def bold (p/p-and (p/p-and star word) star))
-(def italic (p/p-and (p/p-and underscore word) underscore))
-
-
+(defn p-apply
+  "Returns a parser that parses as p and applies f to
+  the parsed result if p succeeds. Fails otherwise, of course."
+  [p f]
+  (fn [s]
+    (let [r (p s)]
+      (if (success? r)
+        (success (f (get-parsed r))
+                 (get-nonparsed r))
+        r))))
 
    #+END_SRC
-  
-* End
+
+* Your turn now
 
