@@ -285,34 +285,27 @@ On the repl, try:
    #+ATTR_REVEAL: :frag (appear)
    It is a *parser combinator*.
 
-* Intrerlude
+** This is functional programming, right?
+
+   #+ATTR_REVEAL: :frag (appear)
+   #+BEGIN_SRC clojure :eval never
+
+(defn p-apply
+  "Returns a parser that parses as p and applies f to
+  the parsed result if p succeeds. Fails otherwise, of course."
+  [p f]
+  (fn [s]
+    (let [r (p s)]
+      (if (success? r)
+        (success (f (get-parsed r))
+                 (get-nonparsed r))
+        r))))
+
+   #+END_SRC
+
+* Review
 
 ** 
-   We need some more helpers.
-
-   #+ATTR_REVEAL: :frag (appear)
-   #+BEGIN_SRC clojure :eval never
-
-(defn- get-parsed
-  "Extracts parsed part from success"
-  [suc]
-  (let [[parsed nonparse] (:success suc)]
-    parsed))
- 
-   #+END_SRC
-
-   #+ATTR_REVEAL: :frag (appear)
-   #+BEGIN_SRC clojure :eval never
-
-(defn- get-nonparsed
-  "Extracts next string to be parsed from a success"
-  [suc]
-  (let [[parsed nonparsed] (:success suc)]
-    nonparsed))
-
-   #+END_SRC
-
-** Review
    
    #+ATTR_REVEAL: :frag (appear)
    #+BEGIN_SRC clojure :eval never
@@ -339,8 +332,20 @@ On the repl, try:
 
    #+END_SRC
 
+** 
+
    #+ATTR_REVEAL: :frag (appear)
-   Some helpers
+   #+BEGIN_SRC clojure :eval never
+
+(defn- get-parsed
+  "Extracts parsed part from success"
+  [suc]
+  (let [[parsed nonparse] (:success suc)]
+    parsed))
+ 
+   #+END_SRC
+
+   #+ATTR_REVEAL: :frag (appear)
    #+BEGIN_SRC clojure :eval never
 
 (defn- get-nonparsed
@@ -349,34 +354,11 @@ On the repl, try:
   (let [[parsed nonparsed] (:success suc)]
     nonparsed))
 
-(defn- get-parsed
-  "Extracts parsed part from success"
-  [suc]
-  (let [[parsed nonparse] (:success suc)]
-    parsed))
-   
    #+END_SRC
 
+* Markdown parser
 
-* Functional programming
-
-** This is functional programming, right?
-
-   #+ATTR_REVEAL: :frag (appear)
-   #+BEGIN_SRC clojure :eval never
-
-(defn p-apply
-  "Returns a parser that parses as p and applies f to
-  the parsed result if p succeeds. Fails otherwise, of course."
-  [p f]
-  (fn [s]
-    (let [r (p s)]
-      (if (success? r)
-        (success (f (get-parsed r))
-                 (get-nonparsed r))
-        r))))
-
-   #+END_SRC
+** Demo?
 
 * Your turn now
 
