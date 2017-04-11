@@ -1,0 +1,364 @@
+#+title: Parsing markdown with functions
+#+REVEAL_ROOT: https://cdn.jsdelivr.net/reveal.js/3.0.0/
+#+OPTIONS: num:nil toc:nil author:nil
+
+* Parsing a char
+
+  #+ATTR_REVEAL: :frag (appear)
+  We would like to parse the character ~a~.
+  
+** Design
+   
+   #+ATTR_REVEAL: :frag (appear)
+   The parser of =a= is a function that, given an input string
+   =s=:
+
+   #+ATTR_REVEAL: :frag (appear)
+   - succeds parsing a
+   - or fails parsing a
+
+** Implemenentation #1
+
+   #+ATTR_REVEAL: :frag (appear)
+   #+begin_src clojure :eval never
+
+(defn parse-a [s]
+  (if (= \a (first s))
+    {:success ["a" (subs s 1)] }
+    {:error s }))
+
+   #+end_src
+
+** Demo
+
+#+BEGIN_NOTES
+On the repl, try:
+(parse-a "hello")
+(parse-a "ahello")
+#+END_NOTES
+
+* Refactor
+
+** Hide implementation
+
+   #+ATTR_REVEAL: :frag (appear)
+   #+BEGIN_SRC clojure :eval never
+
+(defn- as-str
+  "Ensures wathever is returned as string"
+  [whatever]
+  (cond (char? whatever) (str whatever)
+        (empty? whatever) ""
+        (string? whatever) whatever))
+
+   #+END_SRC
+
+   #+ATTR_REVEAL: :frag (appear)
+   #+BEGIN_SRC clojure :eval never
+
+(defn- success
+  "Creates a success"
+  [parsed nonparsed]
+  {:success [(as-str parsed) (as-str nonparsed)]})
+
+   #+END_SRC
+
+   #+ATTR_REVEAL: :frag (appear)
+   #+BEGIN_SRC clojure :eval never
+
+(defn- fail
+  "Creates a failure"
+  [s]
+  {:failure (as-str s)})
+   
+   #+END_SRC
+
+
+   #+ATTR_REVEAL: :frag (appear)
+   #+BEGIN_SRC clojure :eval never
+
+(defn- advance [s]
+  (subs s 1))
+
+   #+END_SRC
+
+** Implementation #2
+
+   #+ATTR_REVEAL: :frag (appear)
+   #+BEGIN_SRC clojure :eval never
+
+(defn parse-a [s]
+  (if (= \a (first s))
+    (success \a (advance s))
+    (fail s)))
+   
+   #+END_SRC
+
+
+
+* Generalize
+
+** 
+
+   #+ATTR_REVEAL: :frag (appear)
+   Now that we know how to parse the =a= character, we can generalize a bit.
+
+** Parsing any character
+
+   #+ATTR_REVEAL: :frag (appear)
+   Given a character =c=, return a parser that parses =c=.
+
+   #+ATTR_REVEAL: :frag (appear)
+   #+BEGIN_SRC clojure :eval never
+
+(defn p-char
+  "Returns a char parser"
+  [c]
+  (fn [s]
+    (if (= c (first s))
+      (success c (advance s))
+      (fail s))))
+   
+   #+END_SRC
+
+** Implementation #3 
+
+   #+ATTR_REVEAL: :frag (appear)
+   #+BEGIN_SRC clojure :eval never
+
+(def parse-a (parse-char \a)) 
+   
+   #+END_SRC
+
+* Paradigm shift
+
+
+** 
+  
+   #+ATTR_REVEAL: :frag (appear)
+   From:
+   #+ATTR_REVEAL: :frag (appear)
+  #+BEGIN_SRC clojure :eval never
+
+(defn parse-a [s]
+  (if (= \a (first s))
+    {:success ["a" (subs s 1)] }
+    {:error s }))
+
+  #+END_SRC
+
+   #+ATTR_REVEAL: :frag (appear)
+  to
+
+   #+ATTR_REVEAL: :frag (appear)
+  #+BEGIN_SRC clojure :eval never
+  
+(def parse-a (parse-char \a)) 
+
+  #+END_SRC
+
+** Parsers
+
+   #+ATTR_REVEAL: :frag (appear)
+   Now *parsers* (a special kind of functions) are
+   the *objects* we deal with (we use =def=, not =defn=).
+
+** But we're not there yet.
+   We have to climb another level.
+* Next level
+** 
+
+   #+ATTR_REVEAL: :frag (appear)
+   - We now want to parse either =a= or =b=.
+   - We want a single parser that is capable of parsing any of
+     the two.
+
+** Implementation #1
+
+   #+ATTR_REVEAL: :frag (appear)
+   #+BEGIN_SRC clojure :eval never
+
+(defn parse-a-or-b [a b]
+  (fn [s]
+    (let [f (first s)]
+      (if (or (= a f)
+              (= b f))
+        (success f (advance s))
+        (fail s)))))
+ 
+   #+END_SRC
+
+** Works? 
+
+   #+ATTR_REVEAL: :frag (appear)
+   Yes
+
+** 
+
+   Are you listening to me?
+   #+ATTR_REVEAL: :frag (appear)
+   - Parsers are the objects, not characters!
+   - We have left those behind!
+
+** 
+   We should deal with parsers, not charaters.
+
+
+   #+ATTR_REVEAL: :frag (appear)
+   #+BEGIN_SRC clojure :eval never
+
+(def parse-a (p-char \a))
+
+   #+END_SRC
+
+   #+ATTR_REVEAL: :frag (appear)
+   #+BEGIN_SRC clojure :eval never
+
+(def parse-b (p-char \b))
+
+   #+END_SRC
+
+   #+ATTR_REVEAL: :frag (appear)
+   #+BEGIN_SRC clojure :eval never
+
+(def parse-a-or-b (p-or parse-a parse-b))
+
+   #+END_SRC
+
+** WHAT?!
+
+   #+ATTR_REVEAL: :frag (appear)
+   I have not told you about this =p-or= yet :$
+   
+   #+ATTR_REVEAL: :frag (appear)
+   But we're on the *next level*, right?
+
+   #+ATTR_REVEAL: :frag (appear)
+   Move on.
+
+** p-or
+   
+   #+ATTR_REVEAL: :frag (appear)
+   We want a *parser* that given two parsers =p1= and =p2=
+   returns a parser that parses what =p1= parses **or** what =p2= parses.
+
+   #+ATTR_REVEAL: :frag (appear)
+   #+BEGIN_SRC clojure :eval never
+
+(defn p-or [p1 p2]
+  (fn [s]
+    (let [r1 (p1 s)]
+      (if (failure? r1)
+        (p2 s)
+        (best-match r1 (p2 s))))))
+
+   #+END_SRC
+
+** 
+
+   #+ATTR_REVEAL: :frag (appear)
+   #+BEGIN_SRC clojure :eval never
+
+(defn failure? [result]
+  (contains? result :failure))
+
+   #+END_SRC
+
+   #+ATTR_REVEAL: :frag (appear)
+   #+BEGIN_SRC clojure :eval never
+
+(defn- best-match
+  [r1 r2]
+  (let [len1 (count (get-parsed r1))
+        len2 (count (get-parsed r2))]
+    (if (> len1 len2)
+      r1
+      r2)))
+
+   #+END_SRC
+
+** Parser combinators 
+   
+   #+ATTR_REVEAL: :frag (appear)
+   =p-or= is a function that given 2 parsers returns another parser.
+   
+   #+ATTR_REVEAL: :frag (appear)
+   It is a *parser combinator*.
+
+** This is functional programming, right?
+
+   #+ATTR_REVEAL: :frag (appear)
+   #+BEGIN_SRC clojure :eval never
+
+(defn p-apply
+  "Returns a parser that parses as p and applies f to
+  the parsed result if p succeeds. Fails otherwise, of course."
+  [p f]
+  (fn [s]
+    (let [r (p s)]
+      (if (success? r)
+        (success (f (get-parsed r))
+                 (get-nonparsed r))
+        r))))
+
+   #+END_SRC
+
+* Review
+
+** 
+   
+   #+ATTR_REVEAL: :frag (appear)
+   #+BEGIN_SRC clojure :eval never
+
+(defn- as-str
+  "Ensures wathever is returned as string"
+  [whatever]
+  (cond (char? whatever) (str whatever)
+        (empty? whatever) ""
+        (string? whatever) whatever))
+
+(defn- success
+  "Creates a success"
+  [parsed nonparsed]
+  {:success [(as-str parsed) (as-str nonparsed)]})
+
+(defn- fail
+  "Creates a failure"
+  [s]
+  {:failure (as-str s)})
+
+(defn- advance [s]
+  (subs s 1))
+
+   #+END_SRC
+
+** 
+
+   #+ATTR_REVEAL: :frag (appear)
+   #+BEGIN_SRC clojure :eval never
+
+(defn- get-parsed
+  "Extracts parsed part from success"
+  [suc]
+  (let [[parsed nonparse] (:success suc)]
+    parsed))
+ 
+   #+END_SRC
+
+   #+ATTR_REVEAL: :frag (appear)
+   #+BEGIN_SRC clojure :eval never
+
+(defn- get-nonparsed
+  "Extracts next string to be parsed from a success"
+  [suc]
+  (let [[parsed nonparsed] (:success suc)]
+    nonparsed))
+
+   #+END_SRC
+
+* Markdown parser
+
+** Demo?
+
+* Your turn now
+
