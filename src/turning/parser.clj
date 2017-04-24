@@ -1,5 +1,4 @@
-(ns turning.parser
-  #_(:gen-class))
+(ns turning.parser)
 
 (defn- as-str
   "Ensures wathever is returned as string"
@@ -21,17 +20,31 @@
 (defn- advance [s]
   (subs s 1))
 
-(defn- get-nonparsed
+(defn success? [result]
+  (contains? result :success))
+
+(defn failure? [result]
+  (contains? result :failure))
+
+(defn- nonparsed
   "Extracts next string to be parsed from a success"
   [suc]
   (let [[parsed nonparsed] (:success suc)]
     nonparsed))
 
-(defn- get-parsed
+(defn- parsed
   "Extracts parsed part from success"
   [suc]
   (let [[parsed nonparse] (:success suc)]
     parsed))
+
+(defn- best-match
+  [r1 r2]
+  (let [len1 (count (parsed r1))
+        len2 (count (parsed r2))]
+    (if (> len1 len2)
+      r1
+      r2)))
 
 (defn p-char
   "Returns a char parser"
@@ -42,22 +55,10 @@
       (fail s))))
 
 (defn p-*
+  "A char parser that always succeeds"
   []
   (fn [s]
     (success (first s) (advance s))))
-
-(defn success? [result]
-  (contains? result :success))
-(defn failure? [result]
-  (contains? result :failure))
-
-(defn- best-match
-  [r1 r2]
-  (let [len1 (count (get-parsed r1))
-        len2 (count (get-parsed r2))]
-    (if (> len1 len2)
-      r1
-      r2)))
 
 (defn p-or [p1 p2]
   (fn [s]
@@ -66,15 +67,14 @@
         (p2 s)
         (best-match r1 (p2 s))))))
 
-(def | p-or)
-
 (defn p-and [p1 p2]
   (fn [s]
     (let [r1 (p1 s)]
       (if (success? r1)
-        (let [r2 (p2 (get-nonparsed r1))]
+        (let [r2 (p2 (nonparsed r1))]
           (if (success? r2)
-            (success (str (get-parsed r1) (get-parsed r2)) (get-nonparsed r2))
+            (success (str (parsed r1) (parsed r2))
+                     (nonparsed r2))
             (fail s)))
         (fail s)))))
 
@@ -85,8 +85,8 @@
   (fn [s]
     (let [r (p s)]
       (if (success? r)
-        (success (f (get-parsed r))
-                 (get-nonparsed r))
+        (success (f (parsed r))
+                 (nonparsed r))
         r))))
 
 (defn p-many
@@ -98,8 +98,8 @@
            rest s]
       (if (failure? r)
         (success accum rest)
-        (let [parsed (get-parsed r)
-              nonparsed (get-nonparsed r)]
+        (let [parsed (parsed r)
+              nonparsed (nonparsed r)]
           (if (empty? nonparsed)
             (success (str accum parsed) nonparsed)
             (do
@@ -124,7 +124,7 @@
     (let [many (p-many p)
           r (many s)]
       (if (and (success? r)
-               (= n (count (get-parsed r))))
+               (= n (count (parsed r))))
         r
         (fail s)))))
 
@@ -150,17 +150,15 @@
            ps (rest parsers)
            accum ""
            rests s]
-      (do
-        #_(prn accum " - " rests)
-        (if (nil? p)
-          (success accum rests)
-          (let [r (p rests)]
-            (if (success? r)
-              (recur (first ps)
-                     (rest ps)
-                     (str accum (get-parsed r))
-                     (get-nonparsed r))
-              r)))))))
+      (if (nil? p)
+        (success accum rests)
+        (let [r (p rests)]
+          (if (success? r)
+            (recur (first ps)
+                   (rest ps)
+                   (str accum (parsed r))
+                   (nonparsed r))
+            r))))))
 
 (defn p-skip
   "Skips what p parses"
@@ -168,7 +166,7 @@
   (fn [s]
     (let [r (p s)]
       (if (success? r)
-        (success "" (get-nonparsed r))
+        (success "" (nonparsed r))
         r))))
 
 ; -> one-char-of
@@ -176,8 +174,6 @@
   [chars]
   (apply p-any (map p-char chars)))
 
-
-                                        ; not
 
 (defn parse-char-a [s]
   (let [p (p-char \a)]
@@ -198,4 +194,28 @@
 
 (def parse-a (p-char \a))
 (def parse-b (p-char \b))
-(def parse-a-or-b (p-or parse-a parse-b))
+
+(def parse-L (p-char \L))
+(def parse-o (p-char \o))
+(def parse-i (p-char \i))
+(def parse-c (p-char \c))
+
+(defn p->> [r p]
+  (if (failure? r)
+    r
+    (let [r2 (p (nonparsed r))]
+      (if (failure? r2)
+        r
+        (success (str (parsed r) (parsed r2))
+                 (nonparsed r2))))))
+
+(defn parse-Loic [s]
+  (p->>
+   (p->>
+    (p->>
+     (parse-L s)
+     parse-o)
+    parse-i)
+   parse-c))
+
+(defn zip [a b] (map vector a b))

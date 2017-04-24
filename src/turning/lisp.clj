@@ -8,7 +8,7 @@
 (def upper (p/p-any-char uppercase))
 (def alpha (p/p-or lower upper))
 (def digit (p/p-any-char "0123456789"))
-(def space (p/parse-char \space))
+(def space (p/p-char \space))
 
 (def other-chars-in-symbol (p/p-any-char "-"))
 (def psymbol
@@ -27,8 +27,8 @@
 
 (def literal psymbol #_(p/p-or psymbol number))
 
-(def lparen (p/parse-char \())
-(def rparen (p/parse-char \)))
+(def lparen (p/p-char \())
+(def rparen (p/p-char \)))
 
 ;; ()
 ;; (a)
