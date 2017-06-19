@@ -45,7 +45,16 @@
             (p/p-or bold->b italic->i)))
   #_(p/p-any word whitespace bold italic))
 
+;p-many strange behaviour
+(text "a")
+(text "ab")
+
+(def pmanytest (p/p-many word))
+;(pmanytest "ab f")
+
+
 (def nl (p/p-char \newline))
+
 (def indent (p/p-times space 2))
 
 (def uli (p/p-seq (p/p-times space 2)
