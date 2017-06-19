@@ -89,24 +89,55 @@
                  (nonparsed r))
         r))))
 
+
+
+(defn debugf
+  " extracts info of clojure objects in a specific way and builds a string
+    turn: turning.parser$p_char$fn__3887@2bd08263 
+    into: p_char@2bd08263
+  "
+  [func]
+  
+  (let [string_vector  (clojure.string/split (str func) #"\$")]
+    (str (get string_vector 1) "@" (get (clojure.string/split (str func) #"@") 1))
+    )
+  )
+
+
+
 (defn p-many
   "Parses 0 or more times"
   [p]
   (fn [s]
+    (println (str  "\nINIT:  " (debugf  p) " " s))
     (loop [r (p s)
            accum ""
            rest s]
+      (println (str 
+                "        -> "
+                "call: (" (debugf p) 
+                " '" s "') "
+                " accum: " accum
+                " rest: " s
+                ))
       (if (failure? r)
-        (success accum rest)
+        (do (println (str  " OUTPUT1(" (debugf  p) "):" (success accum rest) "\n" ))
+            ;maybe this should not be always a success?
+            ;no! it should always be sucess as p-many parses 0 or more 
+            (success accum rest))
         (let [parsed (parsed r)
               nonparsed (nonparsed r)]
           (if (empty? nonparsed)
-            (success (str accum parsed) nonparsed)
+            (do (println (str  " OUTPUT2(" (debugf  p) "):" (success (str accum parsed) nonparsed) "\n" ))
+                (success (str accum parsed) nonparsed))
             (do
               #_(prn (str  "parsed: " (str accum parsed) " nonparsed: " nonparsed))
               (recur (p nonparsed)
                      (str accum parsed)
                      nonparsed))))))))
+
+;how this p-many can become an infinite loop?
+
 
 (defn p-many1
   "Parses 1 or more times"
